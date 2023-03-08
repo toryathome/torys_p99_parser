@@ -46,5 +46,5 @@ if __name__ == '__main__':
                         if not os.path.isfile(file_path):
                             sound_obj = gTTS(text=spell_name.replace("_", " "), slow=False)
                             sound_obj.save(file_path)
-                            subprocess.Popen(["python", "-m", "playsound", file_path])
+                        subprocess.Popen(["python", "-m", "playsound", file_path])
                     print(line, end='')
