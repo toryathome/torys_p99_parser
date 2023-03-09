@@ -29,8 +29,6 @@ def follow(file, sleep_sec=0.1) -> Iterator[str]:
                 line = ''
         elif sleep_sec:
             time.sleep(sleep_sec)
-        current_position = file.tell()
-        file.seek(current_position)
 
 if __name__ == '__main__':
     with open(r"D:\P1999\Logs\eqlog_Tory_P1999Green.txt", "r") as file:
