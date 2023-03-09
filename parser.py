@@ -4,7 +4,6 @@ import subprocess
 import os
 from gtts import gTTS
 
-search_text = "say"
 rule_dict = {
     'tells you': 'alertBloop',
     'Tory': 'alertBloop',
