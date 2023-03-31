@@ -1,8 +1,17 @@
 import time
-from typing import Iterator
 import subprocess
 import os
 from gtts import gTTS
+import re
+import PySimpleGUI as sg
+import time
+
+def show_text(message):
+    bg = '#add123'
+    sg.set_options(font=("Courier New", 22))
+    layout = [[sg.Text(f'{message}', key='-TEXT-', background_color=bg, pad=(0, 0))]]
+    win = sg.Window('title', layout, no_titlebar=True, keep_on_top=True, location=(1100, 900), auto_close=True, auto_close_duration=2, transparent_color=bg, margins=(0, 0))
+    event, values = win.read()
 
 rule_dict = {
     'tells you': 'alertBloop',
@@ -10,15 +19,34 @@ rule_dict = {
     'Your spell fizzles!': 'fadedUhOh',
     'Your spell is interrupted.': 'fadedUhOh',
     'Your target resisted the': 'uhOh',
+    'Your spell did not take hold': 'uhOh',
     'You feel yourself starting to appear': 'uhOh',
+    'spell has worn off': 'magicCharging',
+    'tells the group': 'alertBloop',
+    'is interested in making a trade': 'alertBloop',
+    'adds some coins to the trade': 'alertBloop',
+    'shares money with the group': 'alertBloop',
+    'invites you to join a group': 'alertBloop',
+    'wtb a port': 'alertBloop',
+    'wtb port': 'alertBloop',
+    'lf a port': 'alertBloop',
+    'lf port': 'alertBloop',
+    'port me to': 'alertBloop',
+    'port us to': 'alertBloop',
+    'buying port': 'alertBloop',
+    'buy a port': 'alertBloop',
+    'for a port': 'alertBloop',
+    'for port': 'alertBloop',
+    'port to': 'alertBloop',
 }
 sound_dict = {
+    'magicCharging': r"D:\P1999\sounds\mail1.wav",
     'alertBloop': r"D:\P1999\sounds\mail2.wav",
     'uhOh': r"D:\P1999\sounds\mail3.wav",
     'fadedUhOh': r"D:\P1999\sounds\mail4.wav",
 }
 
-def follow(file, sleep_sec=0.1) -> Iterator[str]:
+def follow(file, sleep_sec=0.1):
     line = ''
     while True:
         tmp = file.readline()
@@ -36,12 +64,31 @@ if __name__ == '__main__':
         for line in follow(file):
             for rule in rule_dict:
                 if rule.upper() in line.upper():
-                    subprocess.Popen(["python", "-m", "playsound", sound_dict[rule_dict[rule]]])
                     if rule == 'Your target resisted the':
+                        subprocess.Popen(["python", "-m", "playsound", sound_dict[rule_dict[rule]]])
                         spell_name = line.split('Your target resisted the')[1].split("spell")[0].strip().replace(" ", "_")
-                        file_path = f"D:\\tory_files\\pythonCode\\project_1999_parser\\spell_sounds\\{spell_name}.mp3"
+                        file_path = f"D:\\tory_files\\pythonCode\\torys_p99_parser\\spell_sounds\\{spell_name}.mp3"
                         if not os.path.isfile(file_path):
                             sound_obj = gTTS(text=spell_name.replace("_", " "), slow=False)
                             sound_obj.save(file_path)
                         subprocess.Popen(["python", "-m", "playsound", file_path])
+                    elif rule == 'tells you' and "tells you, 'I'll give you " in line:
+                        continue
+                    elif rule == 'spell has worn off':
+                        pattern = r'\]\sYour\s+(\S+\s*)+spell\s+has\s+worn\s+off'
+                        matches = re.findall(pattern, line)
+                        for spell_name in matches:
+                            subprocess.Popen(["python", "-m", "playsound", sound_dict[rule_dict[rule]]])
+                            spell_name = line.split('Your ')[1].split("spell")[0].strip().replace(" ", "_")
+                            file_path = f"D:\\tory_files\\pythonCode\\torys_p99_parser\\spell_sounds\\{spell_name}.mp3"
+                            if not os.path.isfile(file_path):
+                                sound_obj = gTTS(text=spell_name.replace("_", " "), slow=False)
+                                sound_obj.save(file_path)
+                            subprocess.Popen(["python", "-m", "playsound", file_path])
+                    elif rule == 'Tory':
+                        if 'story' not in line.lower() and 'inventory' not in line.lower():
+                            subprocess.Popen(["python", "-m", "playsound", sound_dict[rule_dict[rule]]])
+                    else:
+                        subprocess.Popen(["python", "-m", "playsound", sound_dict[rule_dict[rule]]])
                     print(line, end='')
+                    show_text(']'.join(line.split(']')[1:]).split('\n')[0].strip())
