@@ -5,12 +5,13 @@ from gtts import gTTS
 import re
 import PySimpleGUI as sg
 import time
+from multiprocessing import Process
 
 def show_text(message):
     bg = '#add123'
     sg.set_options(font=("Courier New", 22))
     layout = [[sg.Text(f'{message}', key='-TEXT-', background_color=bg, pad=(0, 0))]]
-    win = sg.Window('title', layout, no_titlebar=True, keep_on_top=True, location=(1100, 900), auto_close=True, auto_close_duration=2, transparent_color=bg, margins=(0, 0))
+    win = sg.Window('title', layout, no_titlebar=True, keep_on_top=True, location=(1100, 900), auto_close=True, auto_close_duration=5, transparent_color=bg, margins=(0, 0))
     event, values = win.read()
 
 rule_dict = {
@@ -91,4 +92,5 @@ if __name__ == '__main__':
                     else:
                         subprocess.Popen(["python", "-m", "playsound", sound_dict[rule_dict[rule]]])
                     print(line, end='')
-                    show_text(']'.join(line.split(']')[1:]).split('\n')[0].strip())
+                    p = Process(target=show_text, args=(']'.join(line.split(']')[1:]).split('\n')[0].strip(), ))
+                    p.start()
