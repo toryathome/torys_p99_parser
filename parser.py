@@ -53,11 +53,11 @@ def follow(file, sleep_sec=0.1):
         elif sleep_sec:
             time.sleep(sleep_sec)
 
-def toggle_visibility(win):
-    if win.visible:
+def toggle_visibility(on_off, win):
+    if win.visible and on_off.upper() == 'OFF':
         win.hide()
         win.visible = False
-    else:
+    elif not win.visible and on_off.upper() == 'ON':
         win.hide_time = time.time() + 4
         win.UnHide()
         win.visible = True
@@ -76,9 +76,8 @@ if __name__ == '__main__':
         file.seek(0, 2)
         for line in follow(file):
             _, _ = win.read(timeout=0)
-            if win.hide_time is not None and time.time() > win.hide_time:
-                toggle_visibility(win)
-                win.hide_time = None
+            if win.hide_time is not None and time.time() > win.hide_time and win.visible == True:
+                toggle_visibility('OFF', win)
             for rule in rule_dict:
                 if rule.upper() in line.upper():
                     if rule == 'Your target resisted the':
@@ -109,7 +108,7 @@ if __name__ == '__main__':
                         subprocess.Popen(["python", "-m", "playsound", sound_dict[rule_dict[rule]]])
                     print(line, end='')
                     win['-TEXT-'].update(']'.join(line.split(']')[1:]).split('\n')[0].strip())
-                    toggle_visibility(win)
+                    toggle_visibility('ON', win)
                     
                     
            
