@@ -5,15 +5,7 @@ from gtts import gTTS
 import re
 import PySimpleGUI as sg
 import time
-import threading
-import queue
 
-def display_messages(win, message_queue):
-    if not message_queue.empty():
-        message = message_queue.get()
-        win['-TEXT-'].update(message)
-        win.AutoCloseDuration = 4
-        win.un_hide()
 
 rule_dict = {
     'tells you': 'alertBloop',
@@ -62,16 +54,24 @@ def follow(file, sleep_sec=0.1):
             time.sleep(sleep_sec)
 
 if __name__ == '__main__':
-    message_queue = queue.Queue()
     bg = '#add123'
     sg.set_options(font=("Courier New", 22))
     layout = [[sg.Text('', key='-TEXT-', background_color=bg, pad=(0, 0))]]
-    win = sg.Window('title', layout, no_titlebar=True, keep_on_top=True, location=(1100, 900), auto_close=True, auto_close_duration=5, transparent_color=bg, margins=(0, 0), finalize=True)
+    win = sg.Window('title', layout, no_titlebar=True, keep_on_top=True, location=(1100, 900), transparent_color=bg, margins=(0, 0), finalize=True)
     win.hide()
+    win.hide_time = None
+    win.visible = False
     
     with open(r"D:\P1999\Logs\eqlog_Tory_P1999Green.txt", "r") as file:
         file.seek(0, 2)
         for line in follow(file):
+            _, _ = win.read(timeout=0)
+            if win.hide_time is not None and time.time() > win.hide_time:
+                if win.visible:
+                    win.hide()
+                    win.visible = False
+                win.hide_time = None
+            _, _ = win.read(timeout=0)
             for rule in rule_dict:
                 if rule.upper() in line.upper():
                     if rule == 'Your target resisted the':
@@ -101,12 +101,10 @@ if __name__ == '__main__':
                     else:
                         subprocess.Popen(["python", "-m", "playsound", sound_dict[rule_dict[rule]]])
                     print(line, end='')
-                    message_queue.put(']'.join(line.split(']')[1:]).split('\n')[0].strip())
-            event, values = win.read(timeout=0)
-            if event == sg.WIN_CLOSED:
-                bg = '#add123'
-                sg.set_options(font=("Courier New", 22))
-                layout = [[sg.Text('', key='-TEXT-', background_color=bg, pad=(0, 0))]]
-                win = sg.Window('title', layout, no_titlebar=True, keep_on_top=True, location=(1100, 900), auto_close=True, auto_close_duration=5, transparent_color=bg, margins=(0, 0), finalize=True)
-                win.hide()
-            display_messages(win, message_queue)
+                    win['-TEXT-'].update(']'.join(line.split(']')[1:]).split('\n')[0].strip())
+                    win.hide_time = time.time() + 4
+                    if not win.visible:
+                        win.UnHide()
+                        win.visible = True
+                    _, _ = win.read(timeout=0)
+           
