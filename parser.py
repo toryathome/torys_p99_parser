@@ -53,11 +53,21 @@ def follow(file, sleep_sec=0.1):
         elif sleep_sec:
             time.sleep(sleep_sec)
 
+def toggle_visibility(win):
+    if win.visible:
+        win.hide()
+        win.visible = False
+    else:
+        win.hide_time = time.time() + 4
+        win.UnHide()
+        win.visible = True
+    _, _ = win.read(timeout=0)
+
 if __name__ == '__main__':
     bg = '#add123'
-    sg.set_options(font=("Courier New", 22))
+    sg.set_options(font=("Courier New", 24))
     layout = [[sg.Text('', key='-TEXT-', background_color=bg, pad=(0, 0))]]
-    win = sg.Window('title', layout, no_titlebar=True, keep_on_top=True, location=(1100, 900), transparent_color=bg, margins=(0, 0), finalize=True)
+    win = sg.Window('title', layout, no_titlebar=True, keep_on_top=True, location=(900, 900), transparent_color=bg, margins=(0, 0), finalize=True)
     win.hide()
     win.hide_time = None
     win.visible = False
@@ -67,11 +77,8 @@ if __name__ == '__main__':
         for line in follow(file):
             _, _ = win.read(timeout=0)
             if win.hide_time is not None and time.time() > win.hide_time:
-                if win.visible:
-                    win.hide()
-                    win.visible = False
+                toggle_visibility(win)
                 win.hide_time = None
-            _, _ = win.read(timeout=0)
             for rule in rule_dict:
                 if rule.upper() in line.upper():
                     if rule == 'Your target resisted the':
@@ -102,9 +109,7 @@ if __name__ == '__main__':
                         subprocess.Popen(["python", "-m", "playsound", sound_dict[rule_dict[rule]]])
                     print(line, end='')
                     win['-TEXT-'].update(']'.join(line.split(']')[1:]).split('\n')[0].strip())
-                    win.hide_time = time.time() + 4
-                    if not win.visible:
-                        win.UnHide()
-                        win.visible = True
-                    _, _ = win.read(timeout=0)
+                    toggle_visibility(win)
+                    
+                    
            
