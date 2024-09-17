@@ -5,7 +5,6 @@ from gtts import gTTS
 import re
 import PySimpleGUI as sg
 import time
-import threading
 
 rule_dict = {
     'tells you': 'alertBloop',
@@ -107,7 +106,8 @@ if __name__ == '__main__':
     win.hide()
     win.hide_time = None
     win.visible = False
-    with open(r"D:\P1999\Logs\eqlog_Tory_P1999Green.txt", "r") as file:
+    #with open(r"D:\P1999\Logs\eqlog_Tory_P1999Green.txt", "r") as file:
+    with open(r"D:\P1999\Logs\eqlog_Ulrog_P1999Green.txt", "r") as file:
         file.seek(0, 2)
         while True:
             for line in follow(file):
